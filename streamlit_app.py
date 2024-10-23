@@ -149,7 +149,6 @@ if not found:
 
 
 
-ss = joblib.load('ss.pkl')
 vec = joblib.load('tfidf_vectorizer.pkl')
 lr = joblib.load('classifier_model.pkl')
 
