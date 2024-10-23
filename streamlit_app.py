@@ -139,14 +139,11 @@ if not found:
 
     X_train = preprocess(df,lang)
 
-    vec = TfidfVectorizer(max_features=1000)
+    vec = TfidfVectorizer(max_features=5000)
     X_train_vec = vec.fit_transform(X_train)
-    ss  = StandardScaler()
-    X_train_vec = ss.fit_transform(np.asarray(X_train_vec.todense()))
-    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 1, 'n_jobs': 12})
+    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 0.001, 'n_jobs': 12})
     lr.fit(X_train_vec, df['label'])
 
-    joblib.dump(ss, 'ss.pkl')
     joblib.dump(vec, 'tfidf_vectorizer.pkl')
     joblib.dump(lr, 'classifier_model.pkl')
 
@@ -170,7 +167,6 @@ if st.button("Classify"):
     else:
         text_input = stemming(remove_stopwords(text_input,lang,domain_stopwords=['newsgroup','altatheism','documentid']),lang)
         text_transformed = vec.transform([text_input])
-        text_transformed = ss.transform(np.asarray(text_transformed.todense()))
         prediction = lr.predict(text_transformed)
         
         st.write(f"Predicted Class: {prediction[0]} : {list(data_class.keys())[prediction[0]]}")
