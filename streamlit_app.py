@@ -122,11 +122,6 @@ data_class = {data[i]:i for i in range(len(data))}
 
 if not found:
 
-    lines = read_file('alt.atheism.txt')
-    docs = generate_docs(lines)
-    clean_docs = clean(docs)
-    joined_docs = join_lines(clean_docs)
-
     df = pd.DataFrame()
     for key,val in data_class.items():
         lines = read_file(key)
@@ -144,7 +139,7 @@ if not found:
 
     X_train = preprocess(df,lang)
 
-    vec = TfidfVectorizer(max_features=3_000)
+    vec = TfidfVectorizer(max_features=10_000)
     X_train_vec = vec.fit_transform(X_train)
     ss  = StandardScaler()
     X_train_vec = ss.fit_transform(np.asarray(X_train_vec.todense()))
