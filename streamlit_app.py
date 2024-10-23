@@ -139,7 +139,7 @@ if not found:
 
     X_train = preprocess(df,lang)
 
-    vec = TfidfVectorizer(max_features=10_000)
+    vec = TfidfVectorizer(max_features=1000)
     X_train_vec = vec.fit_transform(X_train)
     ss  = StandardScaler()
     X_train_vec = ss.fit_transform(np.asarray(X_train_vec.todense()))
