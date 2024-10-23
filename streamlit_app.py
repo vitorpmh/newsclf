@@ -141,7 +141,7 @@ if not found:
 
     vec = TfidfVectorizer(max_features=5000)
     X_train_vec = vec.fit_transform(X_train)
-    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 0.001, 'n_jobs': 12})
+    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 1, 'n_jobs': 12})
     lr.fit(X_train_vec, df['label'])
 
     joblib.dump(vec, 'tfidf_vectorizer.pkl')
