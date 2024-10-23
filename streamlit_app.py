@@ -143,7 +143,7 @@ if not found:
     X_train_vec = vec.fit_transform(X_train)
     ss  = StandardScaler()
     X_train_vec = ss.fit_transform(np.asarray(X_train_vec.todense()))
-    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 0.001, 'n_jobs': 12})
+    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 1, 'n_jobs': 12})
     lr.fit(X_train_vec, df['label'])
 
     joblib.dump(ss, 'ss.pkl')
