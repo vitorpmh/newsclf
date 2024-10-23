@@ -3,5 +3,4 @@ joblib
 scikit-learn
 numpy
 pandas
-string
 nltk
