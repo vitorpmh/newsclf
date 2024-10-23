@@ -1,3 +1,5 @@
+import os
+import joblib
 from sklearn.preprocessing import StandardScaler
 import streamlit as st
 import numpy as np
@@ -15,6 +17,15 @@ from nltk.stem.porter import *
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+LANG = 'english'
+lang = LANG
+
+found = False
+for file in os.listdir():
+    if '.pkl' in file:
+        found = True
+
+
 def read_file(file):
     filepath = 'dados_texto/' + file  
     with open(filepath, 'r', encoding="latin-1") as file:
@@ -68,27 +79,7 @@ def join_lines(docs):
         docs_string.append(' '.join(doc))
     return docs_string
 
-lines = read_file('alt.atheism.txt')
-docs = generate_docs(lines)
-clean_docs = clean(docs)
-joined_docs = join_lines(clean_docs)
-import os
-data = os.listdir('dados_texto')
-data_class = {data[i]:i for i in range(len(data))}
 
-df = pd.DataFrame()
-for key,val in data_class.items():
-    lines = read_file(key)
-    docs = generate_docs(lines)
-    clean_docs = clean(docs)
-    joined_docs = join_lines(clean_docs)
-    _df = pd.DataFrame()
-    _df['texto'] = joined_docs
-    _df['label'] = [val for _ in range(len(joined_docs))]
-    df = pd.concat([df,_df])
-df = df.reset_index(drop=True)
-
-lang = 'english'
 def remove_stopwords(text,lang,domain_stopwords):
 
   stop_words = nltk.corpus.stopwords.words(lang) # lang='portuguese' or lang='english'
@@ -124,28 +115,51 @@ def preprocess(df,lang,domain_stopwords=['newsgroup','altatheism','documentid'])
     df = df.apply(lambda x: stemming(x,lang))
     return df
 
-X_train = preprocess(df,lang)
 
-vec = TfidfVectorizer(max_features=10_000)
-X_train_vec = vec.fit_transform(X_train)
-ss  = StandardScaler()
-X_train_vec = ss.fit_transform(np.asarray(X_train_vec.todense()))
-lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 0.001, 'n_jobs': 12})
-lr.fit(X_train_vec, df['label'])
+data = os.listdir('dados_texto')
+data_class = {data[i]:i for i in range(len(data))}
 
 
+if not found:
+
+    lines = read_file('alt.atheism.txt')
+    docs = generate_docs(lines)
+    clean_docs = clean(docs)
+    joined_docs = join_lines(clean_docs)
+
+    df = pd.DataFrame()
+    for key,val in data_class.items():
+        lines = read_file(key)
+        docs = generate_docs(lines)
+        clean_docs = clean(docs)
+        joined_docs = join_lines(clean_docs)
+        _df = pd.DataFrame()
+        _df['texto'] = joined_docs
+        _df['label'] = [val for _ in range(len(joined_docs))]
+        df = pd.concat([df,_df])
+    df = df.reset_index(drop=True)
 
 
 
 
+    X_train = preprocess(df,lang)
+
+    vec = TfidfVectorizer(max_features=3_000)
+    X_train_vec = vec.fit_transform(X_train)
+    ss  = StandardScaler()
+    X_train_vec = ss.fit_transform(np.asarray(X_train_vec.todense()))
+    lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 0.001, 'n_jobs': 12})
+    lr.fit(X_train_vec, df['label'])
+
+    joblib.dump(ss, 'ss.pkl')
+    joblib.dump(vec, 'tfidf_vectorizer.pkl')
+    joblib.dump(lr, 'classifier_model.pkl')
 
 
 
-
-
-
-
-
+ss = joblib.load('ss.pkl')
+vec = joblib.load('tfidf_vectorizer.pkl')
+lr = joblib.load('classifier_model.pkl')
 
 
 
@@ -161,7 +175,7 @@ if st.button("Classify"):
     else:
         text_input = stemming(remove_stopwords(text_input,lang,domain_stopwords=['newsgroup','altatheism','documentid']),lang)
         text_transformed = vec.transform([text_input])
-        
+        text_transformed = ss.transform(np.asarray(text_transformed.todense()))
         prediction = lr.predict(text_transformed)
         
         st.write(f"Predicted Class: {prediction[0]} : {list(data_class.keys())[prediction[0]]}")
