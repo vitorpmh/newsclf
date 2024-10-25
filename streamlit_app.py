@@ -139,7 +139,7 @@ if not found:
 
     X_train = preprocess(df,lang)
 
-    vec = TfidfVectorizer(max_features=5000)
+    vec = TfidfVectorizer(max_features=10000)
     X_train_vec = vec.fit_transform(X_train)
     lr = LogisticRegression(**{'solver': 'lbfgs', 'penalty': 'l2', 'C': 1, 'n_jobs': 12})
     lr.fit(X_train_vec, df['label'])
